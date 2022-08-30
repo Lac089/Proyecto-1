@@ -55,6 +55,7 @@ for row in reader:
         rows.append(row)
 #['49569', '2015-021347', '12/31/2015', '21:14:37', 'peppr_salami', 'S', 'supreme', '12.5']
 
+#Function that recives a date in formar 'mm/dd/yyyy" and a time and returns a TIMESTAMP in format 'yyy-mm-dd hh:mm:ss'
 def real_Date(date,time):
         pos = date.find('/')
         year = date[-4:]
@@ -68,6 +69,7 @@ def real_Date(date,time):
         return real
 
 
+#extract the orderid, date, size, recipe, price, and type of the pizza and insert them in the database
 for row in rows:
         pos = row[1].find('-')
         order_id = int(row[1][pos+1:])
@@ -95,8 +97,11 @@ for row in rows:
            
 conn.commit()
 
+
+#Open ingredients.txt
 fhand =open('ingredients.txt')
 
+#read the file ingredients.txt and insert each ingredient in the database
 
 for line in fhand:
     if len(line) == 1:
