@@ -5,7 +5,6 @@ import csv
 conn = sqlite3.connect('pizza.sqlite')
 cur = conn.cursor()
 
-
 # Create tables for orders, individual pizzas, recipes, types and a connection table  for ingredients
 cur.executescript('''
 CREATE TABLE IF NOT EXISTS Orders (
@@ -96,7 +95,6 @@ for row in rows:
         VALUES ( ? , ?, ?, ?)''', ( order_id, size, recipe_id, price ))
            
 conn.commit()
-
 
 #Open ingredients.txt
 fhand =open('ingredients.txt')
