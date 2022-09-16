@@ -2,7 +2,9 @@ import sqlite3
 import csv
 from unicodedata import name
 
-#Classes
+# Classes
+
+
 class Pizza:
     """A class used to represent each individual pizza
 
@@ -15,6 +17,8 @@ class Pizza:
     price : str
         the price of the pizza
     """
+
+
 def __init__(self, recipe_id, size, price):
     """
     Parameters
@@ -25,7 +29,7 @@ def __init__(self, recipe_id, size, price):
         the size of the pizza which can be S, M or L
     price : str
         the price of the pizza
-    """   
+    """
     self.recipe_id = recipe_id
     self.size = size
     self.price = price
@@ -41,6 +45,7 @@ class Order:
     date : str
         the date and time in yyy-mm-dd hh:mm:ss format
     """
+
     def __init__(self, id, date):
         """
         Parameters
@@ -51,9 +56,11 @@ class Order:
         the date and time in yyy-mm-dd hh:mm:ss format
         """
         self.id = id
-        self.date= date
+        self.date = date
 
-#Functions
+# Functions
+
+
 def list_rows(path):
     """return a file as a list of rows
 
@@ -146,9 +153,9 @@ def ins_recipe(recipe, type_id):
     return recipe_id
 
 
-def ins_orders(order : Order):
+def ins_orders(order: Order):
     """Insert each unique order in the Order Table
-    
+
     Parameters
     ----------
     order: Order
@@ -158,9 +165,9 @@ def ins_orders(order : Order):
         '''INSERT OR IGNORE INTO Orders (id, date) VALUES ( ? , ? )''', (order.id, order.date))
 
 
-def ins_pizza(order : Order, pizza : Pizza):
+def ins_pizza(order: Order, pizza: Pizza):
     """Insert each unique pizza in the Pizza Table
-    
+
     Parameters
     ----------
     order: Order
@@ -174,7 +181,7 @@ def ins_pizza(order : Order, pizza : Pizza):
 
 def insert_ingredient(ingredient, recipe_id):
     """Insert each unique ingredient in the ingredient Table
-    
+
     Parameters
     ----------
     ingredient: str
@@ -262,7 +269,7 @@ for row in rows:
     pos = row[1].find('-')
     type_id = ins_type(row[6])
     recipe_id = ins_recipe(row[4], type_id)
-    order = Order(int(row[1][pos+1:]),real_date(row[1], row[2]))
+    order = Order(int(row[1][pos+1:]), real_date(row[1], row[2]))
     pizza = Pizza(recipe_id, row[5], row[7])
     ins_orders(order)
     ins_pizza(order, pizza)
