@@ -1,12 +1,70 @@
 import sqlite3
 import csv
+from unicodedata import name
+
+#Classes
+class Pizza:
+    """A class used to represent each individual pizza
+
+    Attributes
+    ----------
+    recipe_id : str
+        a unique number that identifies the recipe of the pizza
+    size : str
+        the size of the pizza which can be S, M or L
+    price : str
+        the price of the pizza
+    """
+def __init__(self, recipe_id, size, price):
+    """
+    Parameters
+    ----------
+    recipe_id : str
+        a unique number that identifies the recipe of the pizza
+    size : str
+        the size of the pizza which can be S, M or L
+    price : str
+        the price of the pizza
+    """   
+    self.recipe_id = recipe_id
+    self.size = size
+    self.price = price
 
 
+class Order:
+    """A class used to represent each individual order
+
+    Attributes
+    ----------
+    id : int
+        a unique number that identifies the order
+    date : str
+        the date and time in yyy-mm-dd hh:mm:ss format
+    """
+    def __init__(self, id, date):
+        """
+        Parameters
+        ----------
+        id : int
+        a unique number that identifies the order
+        date : str
+        the date and time in yyy-mm-dd hh:mm:ss format
+        """
+        self.id = id
+        self.date= date
+
+#Functions
 def list_rows(path):
     """return a file as a list of rows
 
-    Keyword arguments:
-    path: The path of the file to open
+    Parameters
+    ----------
+    path : str
+        the ath to the file to be opened
+    Returns
+    -------
+    rows : list
+        a list of the rows of the file
     """
     with open(path) as file:
         reader = csv.reader(file)
@@ -20,9 +78,17 @@ def list_rows(path):
 def real_date(date, time):
     """Receive a date in format 'mm/dd/yyyy' and a time and return a TIMESTAMP in format 'yyy-mm-dd hh:mm:ss'
 
-    Keyword arguments:
-    date: String date in mm/dd/yyyy format
-    time: String time in hh:mm:ss
+    Parameters
+    ----------
+    date: ste
+        String date in mm/dd/yyyy format
+    time: str
+        String time in hh:mm:ss
+
+    Returns
+    -------
+    real : str
+        the date and time in yyy-mm-dd hh:mm:ss format
     """
 
     pos = date.find('/')
@@ -38,37 +104,87 @@ def real_date(date, time):
 
 
 def ins_type(type):
-    """Insert each unique type in the Type Table"""
+    """Insert each unique type in the Type Table
+
+    Parameters
+    ----------
+    date: str
+        String date in mm/dd/yyyy format
+    time: str
+        String time in hh:mm:ss
+
+    Returns
+    -------
+    type_id : str
+        unique id of the type
+    """
     cur.execute('''INSERT OR IGNORE INTO Type (name) VALUES ( ? )''', (type,))
     cur.execute('SELECT id FROM Type WHERE name = ? ', (type,))
-    return cur.fetchone()[0]
+    type_id = cur.fetchone()[0]
+    return type_id
 
 
 def ins_recipe(recipe, type_id):
-    """Insert each unique recipe in the Recipe Table"""
+    """Insert each unique recipe in the Recipe Table
+
+    Parameters
+    ----------
+    recipe: str
+        name of the recipe
+    type_id: str
+        unique id of the type
+
+    Returns
+    -------
+    recipe_id : str
+        unique id of the recipe
+    """
     cur.execute(
         '''INSERT OR IGNORE INTO Recipe (name, type_id) VALUES ( ? , ? )''', (recipe, type_id))
     cur.execute('SELECT id FROM Recipe WHERE name = ? ', (recipe,))
-    return cur.fetchone()[0]
+    recipe_id = cur.fetchone()[0]
+    return recipe_id
 
 
-def ins_orders(order_id, date):
-    """Insert each unique order in the Order Table"""
+def ins_orders(order : Order):
+    """Insert each unique order in the Order Table
+    
+    Parameters
+    ----------
+    order: Order
+        object order to insert in the database
+    """
     cur.execute(
-        '''INSERT OR IGNORE INTO Orders (id, date) VALUES ( ? , ? )''', (order_id, date))
+        '''INSERT OR IGNORE INTO Orders (id, date) VALUES ( ? , ? )''', (order.id, order.date))
 
 
-def ins_pizza(order_id, size, recipe_id, price):
-    """Insert each unique pizza in the Pizza Table"""
+def ins_pizza(order : Order, pizza : Pizza):
+    """Insert each unique pizza in the Pizza Table
+    
+    Parameters
+    ----------
+    order: Order
+        order of the pizza
+    pizza: Pizza
+        object pizza to insert in the table
+    """
     cur.execute('''INSERT OR IGNORE INTO Pizza (order_id, size, recipe_id, price ) VALUES ( ? , ?, ?, ?)''',
-                (order_id, size, recipe_id, price))
+                (order.id, pizza.size, pizza.recipe_id, pizza.price))
 
 
-def insert_ingredient(ing, recipe_id):
-    """Insert each unique ingredient in the ingredient Table"""
+def insert_ingredient(ingredient, recipe_id):
+    """Insert each unique ingredient in the ingredient Table
+    
+    Parameters
+    ----------
+    ingredient: str
+        name of the ingredient
+    recipe_id: str
+        unique id of the recipe
+    """
     cur.execute(
-        '''INSERT OR IGNORE INTO Ingredient (name) VALUES ( ? )''', (ing,))
-    cur.execute('SELECT id FROM Ingredient WHERE name = ? ', (ing,))
+        '''INSERT OR IGNORE INTO Ingredient (name) VALUES ( ? )''', (ingredient,))
+    cur.execute('SELECT id FROM Ingredient WHERE name = ? ', (ingredient,))
     ing_id = int(cur.fetchone()[0])
     cur.execute(
         '''INSERT OR IGNORE INTO recipe_ingregients (recipe_id, ingr_id) VALUES ( ?,? )''', (ing_id, recipe_id))
@@ -137,24 +253,19 @@ create_table_recipe()
 create_table_ingredient()
 create_table_recipe_ingregients()
 
-# Open file data.csv and create the list of rows
-rows = list_rows('data.csv')
+# Open file Orders.csv and create the list of rows
+rows = list_rows('Orders.csv')
 
-# extract the orderid, date, size, recipe, price, and type of the pizza and insert them in the database
+# extract the orderid, date, size, recipe, price, and type of the pizza
+# create the objects order and pizza and insert them in the database
 for row in rows:
     pos = row[1].find('-')
-    order_id = int(row[1][pos+1:])
-    date = real_date(row[1], row[2])
-    size = row[5]
-    recipe = row[4]
-    price = row[7]
-    type = row[6]
-
-    type_id = ins_type(type)
-    recipe_id = ins_recipe(recipe, type_id)
-    ins_orders(order_id, date)
-    ins_pizza(order_id, size, recipe_id, price)
-
+    type_id = ins_type(row[6])
+    recipe_id = ins_recipe(row[4], type_id)
+    order = Order(int(row[1][pos+1:]),real_date(row[1], row[2]))
+    pizza = Pizza(recipe_id, row[5], row[7])
+    ins_orders(order)
+    ins_pizza(order, pizza)
 conn.commit()
 
 with open('ingredients.txt') as filehandle:
